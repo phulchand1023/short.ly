@@ -1,28 +1,34 @@
 require("dotenv").config();
 const express = require("express");
+const helmet = require("helmet");
+const cors = require("cors");
 const connectDB = require("./config/db");
-const app = express();
+const errorHandler = require("./middleware/errorMiddleware");
 
+const urlRoutes = require("./routes/url");
+const indexRoutes = require("./routes/index");
+const authRoutes = require("./routes/auth");
+const linksRoutes = require("./routes/links");
+
+const app = express();
 const PORT = process.env.PORT || 5000;
 
 connectDB();
+
+app.use(helmet());
+app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173" }));
 app.use(express.json());
 
 app.get("/", (req, res) => {
   res.send("Server running fine!");
 });
 
-const urlRoutes = require("./routes/url");
 app.use("/api", urlRoutes);
-
-const indexRoutes = require("./routes/index");
 app.use("/", indexRoutes);
-
-const authRoutes = require("./routes/auth");
 app.use("/api/auth", authRoutes);
-
-const linksRoutes = require("./routes/links");
 app.use("/api", linksRoutes);
+
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server running on ${PORT}`);

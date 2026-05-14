@@ -1,4 +1,5 @@
 const validUrl = require("valid-url");
+const { nanoid } = require("nanoid");
 const Url = require("../models/Url");
 
 /**
@@ -22,7 +23,7 @@ const shortenUrl = async (req, res) => {
   if (!validUrl.isUri(longUrl)) {
     return res
       .status(400)
-      .json({ suceess: false, message: "Please provide a valid URL" });
+      .json({ success: false, message: "Please provide a valid URL" });
   }
 
   try {
@@ -32,10 +33,7 @@ const shortenUrl = async (req, res) => {
       return res.status(200).json({ success: true, data: url });
     }
 
-    const { nanoid } = await import("nanoid");
-
     const urlCode = nanoid(7);
-    console.log("ENV BASE_URL:", process.env.BASE_URL);
     const shortUrl = `${process.env.BASE_URL}/${urlCode}`;
 
     const newUrlData = {
@@ -70,7 +68,10 @@ const redirectToUrl = async (req, res) => {
     } else {
       return res.status(404).json({ success: false, error: "No URL found" });
     }
-  } catch (error) {}
+  } catch (error) {
+    console.error("Redirect error:", error);
+    res.status(500).json({ success: false, error: "Server error" });
+  }
 };
 
 module.exports = { shortenUrl, redirectToUrl };
